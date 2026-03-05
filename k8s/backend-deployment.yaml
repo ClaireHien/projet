@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: epouvante-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: epouvante-api
+  template:
+    metadata:
+      labels:
+        app: epouvante-api
+    spec:
+      containers:
+      - name: api-container
+        image: epouvante-api:v4
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 9000
+        env:
+        # Données issues du SECRET
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: epouvante-api-secrets
+              key: APP_KEY
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: epouvante-api-secrets
+              key: DB_PASSWORD
+        # Données issues de la CONFIGMAP
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: epouvante-api-config
+              key: DB_HOST
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: epouvante-api-config
+              key: DB_DATABASE
+        - name: DB_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: epouvante-api-config
+              key: DB_USERNAME
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: epouvante-api-service
+spec:
+  selector:
+    app: epouvante-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9000
+  type: ClusterIP

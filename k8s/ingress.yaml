@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: epouvante-ingress
+  annotations:
+    # Cette ligne est cruciale pour que le routage vers /api fonctionne
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+  - host: 192.168.49.2.nip.io
+    http:
+      paths:
+      - path: /api/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: epouvante-api-service
+            port:
+              number: 80
+      - path: /()(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: epouvante-front-service
+            port:
+              number: 80
